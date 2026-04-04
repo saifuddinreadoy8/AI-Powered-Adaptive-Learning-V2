@@ -16,13 +16,18 @@ function TeacherDashboardContent() {
   useEffect(() => {
     if (!user) return
     async function load() {
-      const [s, c] = await Promise.all([
-        getTeacherStats(user.id),
-        getTeacherClasses(user.id),
-      ])
-      setStats(s)
-      setClasses(c)
-      setLoading(false)
+      try {
+        const [s, c] = await Promise.all([
+          getTeacherStats(user.id),
+          getTeacherClasses(user.id),
+        ])
+        setStats(s)
+        setClasses(c)
+      } catch (err) {
+        console.error('Teacher dashboard load error:', err)
+      } finally {
+        setLoading(false)
+      }
     }
     load()
   }, [user])
@@ -42,7 +47,7 @@ function TeacherDashboardContent() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-8 stagger">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 stagger">
           <div className="stat-card">
             <p className="text-3xl font-bold text-purple-400">{loading ? '—' : stats?.totalClasses || 0}</p>
             <p className="text-slate-400 text-sm mt-1">Classes</p>
