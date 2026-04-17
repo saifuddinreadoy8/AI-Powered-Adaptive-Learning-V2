@@ -18,15 +18,20 @@ function StudentDashboardContent() {
   useEffect(() => {
     if (!user) return
     async function load() {
-      const [s, history, classes] = await Promise.all([
-        getStudentStats(user.id),
-        getQuizHistory(user.id),
-        getStudentClasses(user.id),
-      ])
-      setStats(s)
-      setRecentQuizzes(history.slice(0, 5))
-      setClassCount(classes.length)
-      setLoadingStats(false)
+      try {
+        const [s, history, classes] = await Promise.all([
+          getStudentStats(user.id),
+          getQuizHistory(user.id),
+          getStudentClasses(user.id),
+        ])
+        setStats(s)
+        setRecentQuizzes(history.slice(0, 5))
+        setClassCount(classes.length)
+      } catch (err) {
+        console.error('Student dashboard load error:', err)
+      } finally {
+        setLoadingStats(false)
+      }
     }
     load()
   }, [user])
@@ -46,7 +51,7 @@ function StudentDashboardContent() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 stagger">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8 stagger">
           <div className="stat-card">
             <p className="text-3xl font-bold text-indigo-400">{loadingStats ? '—' : stats?.totalQuizzes || 0}</p>
             <p className="text-slate-400 text-sm mt-1">Quizzes Taken</p>

@@ -191,9 +191,25 @@ function PracticeContent() {
         <ResultCard results={results} />
         <QuizReview questions={questions} answers={answers} />
         
-        <div className="grid grid-cols-2 gap-4 mt-6">
-          <button onClick={() => setStep('setup')} className="btn-primary py-4">🔄 New Quiz</button>
-          <button onClick={() => router.push('/student/dashboard')} className="btn-secondary py-4">🏠 Dashboard</button>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
+          <button
+            onClick={() => {
+              localStorage.setItem('roadmapData', JSON.stringify({
+                subject: selectedSubtopic || selectedTopic.topic_name,
+                field: selectedTopic.topic_name,
+                difficulty,
+                score: results.percentage,
+                weakAreas: results.weakAreas || [],
+                strongAreas: results.strongAreas || [],
+              }))
+              router.push('/student/roadmaps')
+            }}
+            className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-purple-500/20"
+          >
+            🗺️ Get AI Roadmap
+          </button>
+          <button onClick={() => setStep('setup')} className="btn-primary py-4 font-bold">🔄 New Quiz</button>
+          <button onClick={() => router.push('/student/dashboard')} className="btn-secondary py-4 font-bold">🏠 Dashboard</button>
         </div>
       </div>
     </div>
