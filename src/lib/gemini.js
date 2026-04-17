@@ -53,7 +53,7 @@ async function callGemini(prompt) {
     console.error("Gemini Parse Failure. Raw Text:", raw);
     throw new Error("Failed to parse Gemini response as JSON");
   }
-}    
+}
 
 // ══════════════════════════════════════
 // GENERATE 20 MCQs — Self-Practice Mode
@@ -88,9 +88,13 @@ Rules:
 // ══════════════════════════════════════
 // GENERATE 20 MCQs — Classroom Mode (Teacher)
 // ══════════════════════════════════════
-export async function generateClassroomQuiz(topic, difficulty) {
+export async function generateClassroomQuiz(topic, difficulty, subtopic = '') {
+  const subtopicInstruction = subtopic
+    ? `Focus ALL questions specifically on "${subtopic}" within "${topic}".`
+    : `Cover diverse subtopics within "${topic}".`;
+
   const prompt = `You are an expert quiz generator.
-Generate exactly 20 ${difficulty} level MCQ questions about "${topic}".
+Generate exactly 20 ${difficulty} level MCQ questions about "${topic}"${subtopic ? ` — specifically "${subtopic}"` : ''}.
 
 Return STRICT JSON only:
 [
@@ -106,7 +110,7 @@ Return STRICT JSON only:
 Rules:
 1. Exactly 20 questions
 2. Exactly 4 options per question
-3. Cover diverse subtopics matching "${topic}"`;
+3. ${subtopicInstruction}`;
 
   const questions = await callGemini(prompt);
   if (!Array.isArray(questions)) throw new Error("Expected JSON array from Gemini");
