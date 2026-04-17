@@ -89,10 +89,10 @@ function UsersContent() {
         )}
 
         {/* Search & Filter */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6 fade-in">
+        <div className="flex flex-col sm:flex-row gap-3 mb-6 fade-in items-start sm:items-center">
           <input className="input flex-1" placeholder="🔍 Search by name or email..."
             value={search} onChange={e => setSearch(e.target.value)} />
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {['All', 'Student', 'Teacher', 'Admin'].map(r => (
               <button key={r} onClick={() => setRoleFilter(r)}
                 className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${

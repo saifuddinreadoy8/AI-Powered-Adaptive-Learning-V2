@@ -13,9 +13,14 @@ function AdminDashboardContent() {
 
   useEffect(() => {
     async function load() {
-      const s = await getAdminStats()
-      setStats(s)
-      setLoading(false)
+      try {
+        const s = await getAdminStats()
+        setStats(s)
+      } catch (err) {
+        console.error('Admin dashboard load error:', err)
+      } finally {
+        setLoading(false)
+      }
     }
     load()
   }, [])
@@ -33,7 +38,7 @@ function AdminDashboardContent() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 stagger">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8 stagger">
           <div className="stat-card">
             <p className="text-3xl font-bold text-amber-400">{loading ? '—' : stats?.totalUsers || 0}</p>
             <p className="text-slate-400 text-sm mt-1">Total Users</p>
