@@ -3,7 +3,6 @@ import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 
 const CHATBOT_API_KEY = process.env.NEXT_PUBLIC_GEMINI_CHATBOT_KEY
-const FALLBACK_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY
 const CHATBOT_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
 // System prompt that teaches the bot about the platform
@@ -120,59 +119,26 @@ export default function Chatbot() {
 
       const prompt = `${systemPrompt}\n\n## Conversation:\n${conversationText}\n\nAssistant:`
 
-      const requestBody = JSON.stringify({
+      const res = await fetch(`${CHATBOT_URL}?key=${CHATBOT_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
           temperature: 0.7,
           maxOutputTokens: 500,
         },
+        }),
       })
 
-      // Try chatbot key first, then fallback to primary key
-      const keysToTry = [CHATBOT_API_KEY, FALLBACK_API_KEY].filter(Boolean)
-      let lastError = null
-
-      for (const apiKey of keysToTry) {
-        // Retry up to 2 times per key for 429/503 errors
-        for (let attempt = 0; attempt < 3; attempt++) {
-          try {
-            const res = await fetch(`${CHATBOT_URL}?key=${apiKey}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: requestBody,
-            })
-
-            if (res.status === 429 || res.status === 503) {
-              const delay = Math.pow(2, attempt + 1) * 1000
-              console.warn(`Chatbot API ${res.status}, retrying in ${delay/1000}s (attempt ${attempt + 1}/3)`)
-              await new Promise(r => setTimeout(r, delay))
-              continue
-            }
-
             if (!res.ok) {
-              const errText = await res.text()
-              console.error(`Chatbot API error ${res.status}:`, errText)
-              lastError = new Error(`API Error: ${res.status}`)
-              break // Try next key
+        throw new Error(`API Error: ${res.status}`)
             }
 
             const data = await res.json()
-            const reply = data.candidates?.[0]?.content?.parts?.[0]?.text
-            if (reply) {
-              setMessages(prev => [...prev, { role: 'assistant', content: reply.trim() }])
-              return // Success — exit
-            }
-            lastError = new Error('Empty AI response')
-            break // Try next key
-          } catch (fetchErr) {
-            lastError = fetchErr
-            break // Try next key
-          }
-        }
-      }
+      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't process that. Please try again."
 
-      // All keys/retries failed
-      throw lastError || new Error('All API keys failed')
+              setMessages(prev => [...prev, { role: 'assistant', content: reply.trim() }])
     } catch (err) {
       console.error('Chatbot error:', err)
       setMessages(prev => [...prev, {
